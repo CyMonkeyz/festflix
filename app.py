@@ -1,25 +1,93 @@
 # app.py
 # Entry point untuk menjalankan Flask application
 
-from flask import Flask, render_template, redirect, url_for
+import models
 import config
+from flask import Flask, render_template, redirect, url_for, request, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
+app.config.from_object('config')
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
-# Buat satu function dashboard untuk dua route: '/' dan '/dashboard'
-@app.route('/')
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
+models.init_db()
 
-@app.route('/login')
+# ===== Dekorator proteksi login =====
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('user_id'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def dashboard():
+    user = models.get_user_by_id(session['user_id'])
+    return render_template('dashboard.html', user=user)
+
+# ===== ROUTE REGISTER =====
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        # Validasi input
+        if not all([username, email, password, confirm_password]):
+            flash("Semua field harus diisi.", "danger")
+        elif "@gmail.com" not in email:
+            flash("Email harus pakai @gmail.com.", "danger")
+        elif password != confirm_password:
+            flash("Password dan konfirmasi password tidak sama.", "danger")
+        elif models.get_user_by_email(email):
+            flash("Email sudah terdaftar.", "danger")
+        else:
+            hash_pw = generate_password_hash(password)
+            user_id = models.create_user(username, email, hash_pw)
+            if user_id:
+                flash("Registrasi sukses, silakan login!", "success")
+                return redirect(url_for('login'))
+            else:
+                flash("Username/email sudah terdaftar.", "danger")
+    return render_template('register.html')
+
+# ===== ROUTE LOGIN =====
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+
+        user = models.get_user_by_email(email)
+        if not user:
+            flash("Email belum terdaftar.", "danger")
+        elif not check_password_hash(user['password_hash'], password):
+            flash("Password salah.", "danger")
+        else:
+            session['user_id'] = user['id']
+            flash("Login sukses, selamat datang!", "success")
+            return redirect(url_for('dashboard'))
     return render_template('login.html')
 
-@app.route('/register')
-def register():
-    return render_template('register.html')
+# ===== ROUTE DASHBOARD (protected) =====
+@app.route('/')
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user = None
+    if session.get('user_id'):
+        user = models.get_user_by_id(session['user_id'])
+    return render_template('dashboard.html', user=user)
+
+# ===== ROUTE LOGOUT =====
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("Berhasil logout.", "info")
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

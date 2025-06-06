@@ -3,22 +3,34 @@
   <div class="flex items-center justify-center min-h-screen">
     <div class="bg-white shadow rounded p-8 w-full max-w-md">
       <h2 class="text-2xl font-bold mb-6 text-center">Register FestFlix</h2>
-      <form>
+      <!-- Tambahkan block untuk flash message (optional, biar rapi) -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="mb-4 p-2 rounded
+              {% if category == 'danger' %}bg-red-200 text-red-700{% elif category == 'success' %}bg-green-200 text-green-700{% elif category == 'info' %}bg-blue-200 text-blue-700{% else %}bg-gray-200 text-gray-700{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      <!-- ========== FORM ========== -->
+      <form method="post">
         <div class="mb-4">
           <label class="block mb-1">Username</label>
-          <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nama pengguna" />
+          <input type="text" name="username" class="w-full border rounded px-3 py-2" placeholder="Nama pengguna" required />
         </div>
         <div class="mb-4">
           <label class="block mb-1">Email <span class="text-xs text-gray-500">(Harus pakai @gmail.com)</span></label>
-          <input type="email" class="w-full border rounded px-3 py-2" placeholder="you@gmail.com" />
+          <input type="email" name="email" class="w-full border rounded px-3 py-2" placeholder="you@gmail.com" required />
         </div>
         <div class="mb-4">
           <label class="block mb-1">Password</label>
-          <input type="password" class="w-full border rounded px-3 py-2" placeholder="Password" />
+          <input type="password" name="password" class="w-full border rounded px-3 py-2" placeholder="Password" required />
         </div>
         <div class="mb-4">
           <label class="block mb-1">Konfirmasi Password</label>
-          <input type="password" class="w-full border rounded px-3 py-2" placeholder="Ulangi Password" />
+          <input type="password" name="confirm_password" class="w-full border rounded px-3 py-2" placeholder="Ulangi Password" required />
         </div>
         <button class="w-full bg-green-600 text-white rounded py-2 mt-4">Register</button>
       </form>

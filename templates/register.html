@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow rounded p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-center">Register FestFlix</h2>
+      <form>
+        <div class="mb-4">
+          <label class="block mb-1">Username</label>
+          <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nama pengguna" />
+        </div>
+        <div class="mb-4">
+          <label class="block mb-1">Email <span class="text-xs text-gray-500">(Harus pakai @gmail.com)</span></label>
+          <input type="email" class="w-full border rounded px-3 py-2" placeholder="you@gmail.com" />
+        </div>
+        <div class="mb-4">
+          <label class="block mb-1">Password</label>
+          <input type="password" class="w-full border rounded px-3 py-2" placeholder="Password" />
+        </div>
+        <div class="mb-4">
+          <label class="block mb-1">Konfirmasi Password</label>
+          <input type="password" class="w-full border rounded px-3 py-2" placeholder="Ulangi Password" />
+        </div>
+        <button class="w-full bg-green-600 text-white rounded py-2 mt-4">Register</button>
+      </form>
+      <p class="mt-4 text-sm text-center">
+        Sudah punya akun?
+        <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Login di sini</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

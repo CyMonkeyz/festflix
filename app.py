@@ -1,20 +1,25 @@
 # app.py
 # Entry point untuk menjalankan Flask application
 
-# 1. Import Flask & config
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 import config
 
-# 2. Buat objek app & set SECRET_KEY
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
-# 3. Buat route /
+# Buat satu function dashboard untuk dua route: '/' dan '/dashboard'
 @app.route('/')
+@app.route('/dashboard')
 def dashboard():
-    # Render dashboard.html
     return render_template('dashboard.html')
 
-# 4. Jalankan app saat file ini dieksekusi langsung
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/register')
+def register():
+    return render_template('register.html')
+
 if __name__ == '__main__':
     app.run(debug=True)

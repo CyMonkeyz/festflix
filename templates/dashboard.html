@@ -1,6 +1,47 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold">Halo FestFlix!</h1>
+  <!-- Navbar/Header -->
+  <div class="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
+    <span class="font-bold text-lg">Dashboard FestFlix</span>
+    <a href="#" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600">Logout</a>
+  </div>
+
+  <!-- Banner Langganan -->
+  <div class="container mx-auto mt-6">
+    <div class="bg-yellow-200 text-yellow-800 rounded p-4 flex justify-between items-center mb-6">
+      <span>Status Langganan: <b>Belum Aktif</b></span>
+      <a href="#" class="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500">Langganan Sekarang</a>
+    </div>
+
+    <!-- Kategori Genre -->
+    <div class="mb-4">
+      <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>
+      <div class="flex gap-2 flex-wrap">
+        <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Action</button>
+        <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Drama</button>
+        <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Komedi</button>
+        <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Horror</button>
+        <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Sci-Fi</button>
+      </div>
+    </div>
+
+    <!-- Daftar Film Dummy -->
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Daftar Film</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card Film Dummy -->
+        <div class="bg-white rounded shadow p-4">
+          <div class="h-40 bg-gray-300 rounded mb-2"></div>
+          <h3 class="font-bold text-xl mb-1">Judul Film 1</h3>
+          <button class="bg-blue-500 text-white px-4 py-1 rounded mt-2 w-full">Tonton</button>
+        </div>
+        <div class="bg-white rounded shadow p-4 opacity-60">
+          <div class="h-40 bg-gray-300 rounded mb-2"></div>
+          <h3 class="font-bold text-xl mb-1">Judul Film 2</h3>
+          <button class="bg-gray-400 text-white px-4 py-1 rounded mt-2 w-full" disabled>Locked</button>
+        </div>
+        <!-- Tambah lebih banyak card dummy sesuai selera -->
+      </div>
+    </div>
   </div>
 {% endblock %}

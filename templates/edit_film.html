@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 max-w-md">
+  <h2 class="text-xl font-bold mb-4">Edit Film</h2>
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-4">
+      <label>Judul Film</label>
+      <input type="text" name="title" class="w-full border rounded px-3 py-2" value="{{ film.title }}" required>
+    </div>
+    <div class="mb-4">
+      <label>Genre</label>
+      <select name="genre" class="w-full border rounded px-3 py-2" required>
+        <option value="" disabled>Pilih genre...</option>
+        {% for g in genre_list %}
+          <option value="{{ g }}" {% if g == film.genre %}selected{% endif %}>{{ g }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-4">
+      <label>Sinopsis (maks 500 kata)</label>
+      <textarea name="sinopsis" rows="4" maxlength="2500" class="w-full border rounded px-3 py-2" required>{{ film.sinopsis }}</textarea>
+      <span class="text-xs text-gray-500 block mt-1">Tulis sinopsis maksimal 500 kata.</span>
+    </div>
+    <div class="mb-4">
+      <label>Tahun Film</label>
+      <input type="number" name="tahun" min="1900" max="2100" class="w-full border rounded px-3 py-2" value="{{ film.tahun }}" required>
+      <span class="text-xs text-gray-500 block mt-1">Hanya angka, contoh: 2024</span>
+    </div>
+    <div class="mb-4">
+      <label>Poster (gambar)</label>
+      {% if film.path_poster %}
+        <div class="mb-1">
+          <img src="{{ url_for('static', filename=film.path_poster) }}" alt="Poster Lama" class="h-20 inline-block rounded shadow">
+          <span class="ml-2 text-xs text-gray-500">Poster lama: {{ film.path_poster }}</span>
+        </div>
+      {% endif %}
+      <input type="file" name="poster" accept="image/*" class="w-full border rounded px-3 py-2">
+      <span class="text-xs text-gray-500 block mt-1">Biarkan kosong jika tidak ingin ganti poster.</span>
+    </div>
+    <div class="mb-4">
+      <label>Video (mp4/avi/mov)</label>
+      {% if film.path_video %}
+        <div class="mb-1">
+          <span class="text-xs text-gray-500">File video lama: {{ film.path_video }}</span>
+        </div>
+      {% endif %}
+      <input type="file" name="video" accept="video/*" class="w-full border rounded px-3 py-2">
+      <span class="text-xs text-gray-500 block mt-1">Biarkan kosong jika tidak ingin ganti video.</span>
+    </div>
+    <div class="mb-4">
+      <label>Produser</label>
+      <input type="text" name="produser" class="w-full border rounded px-3 py-2" value="{{ film.produser }}">
+    </div>
+    <button class="bg-yellow-600 text-white px-4 py-2 rounded">Update Film</button>
+    <a href="{{ url_for('admin_panel') }}" class="ml-4 text-blue-600">Kembali</a>
+  </form>
+</div>
+{% endblock %}

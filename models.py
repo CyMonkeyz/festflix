@@ -1,7 +1,7 @@
 import sqlite3
 import datetime
 import config
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 def get_db_connection():
     conn = sqlite3.connect(config.DATABASE_PATH)
@@ -29,6 +29,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             genre TEXT NOT NULL,
+            sinopsis TEXT,
+            tahun INTEGER,
             path_poster TEXT,
             path_video TEXT NOT NULL,
             produser TEXT,
@@ -37,6 +39,7 @@ def init_db():
             jumlah_review INTEGER DEFAULT 0
         );
     ''')
+
 
     # Tabel watch_history
     cursor.execute('''
@@ -64,6 +67,15 @@ def init_db():
     ''')
 
     conn.commit()
+    
+# ===================== ADMIN =========================
+    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+            ('admin', 'admin@festflix.local', generate_password_hash('admin'))
+        )
+        conn.commit()
     conn.close()
 
 # ===================== USER =========================
@@ -105,13 +117,24 @@ def verify_user(email, password):
     return None
 
 # ===================== FILM =========================
-def create_film(title, genre, path_poster, path_video, produser=None):
+def create_film(title, genre, sinopsis, tahun, path_poster, path_video, produser=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO films (title, genre, path_poster, path_video, produser) VALUES (?, ?, ?, ?, ?)",
-        (title, genre, path_poster, path_video, produser)
+        "INSERT INTO films (title, genre, sinopsis, tahun, path_poster, path_video, produser) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (title, genre, sinopsis, tahun, path_poster, path_video, produser)
     )
+    conn.commit()
+    conn.close()
+    
+def update_film(film_id, title, genre, sinopsis, tahun, path_poster, path_video, produser):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE films
+        SET title=?, genre=?, sinopsis=?, tahun=?, path_poster=?, path_video=?, produser=?
+        WHERE id=?
+    ''', (title, genre, sinopsis, tahun, path_poster, path_video, produser, film_id))
     conn.commit()
     conn.close()
 

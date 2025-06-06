@@ -7,6 +7,23 @@
   <title>FestFlix</title>
 </head>
 <body class="bg-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
+    <span class="font-bold text-lg">FestFlix</span>
+    <div class="flex items-center gap-4">
+      {% if user %}
+        <span>Hai, {{ user['username'] }}</span>
+        <a href="{{ url_for('logout') }}" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600 ml-2">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="bg-blue-500 px-4 py-1 rounded hover:bg-blue-600">Login</a>
+      {% endif %}
+      {% if session.is_admin %}
+        <a href="{{ url_for('admin_panel') }}" class="bg-yellow-500 px-3 py-1 rounded ml-2">Admin Panel</a>
+      {% endif %}
+    </div>
+  </nav>
+  
   {% block content %}{% endblock %}
 </body>
 </html>

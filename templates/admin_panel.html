@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto max-w-5xl px-4 py-8">
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+    <h2 class="text-2xl font-bold">Admin Panel – CRUD Film</h2>
+    <div class="flex flex-col md:flex-row md:items-center gap-2">
+      <form method="get" class="flex gap-2 items-center">
+        <input type="text" name="q" placeholder="Cari ID / Judul..." value="{{ search_query or '' }}"
+               class="px-3 py-2 border rounded w-52 focus:outline-none focus:ring focus:border-blue-300" />
+        <button type="submit" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Cari</button>
+        <a href="{{ url_for('admin_panel') }}"
+           class="ml-2 text-gray-500 hover:text-gray-700 text-xs underline">Reset</a>
+      </form>
+      <a href="{{ url_for('add_film') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">+ Tambah Film</a>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto rounded shadow bg-white">
+    <table class="w-full table-auto border border-gray-300">
+      <thead>
+        <tr class="bg-gray-100 border-b border-gray-300">
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 border-r border-gray-300">ID</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 border-r border-gray-300">Judul</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 border-r border-gray-300">Genre</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 border-r border-gray-300">Produser</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 border-r border-gray-300">Tahun</th>
+          <th class="px-6 py-3 text-center font-semibold text-gray-700">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for film in films %}
+        <tr class="border-b border-gray-300 hover:bg-gray-50 transition">
+          <td class="px-6 py-3 text-center border-r border-gray-300">{{ film.id }}</td>
+          <td class="px-6 py-3 font-semibold border-r border-gray-300">{{ film.title }}</td>
+          <td class="px-6 py-3 text-center border-r border-gray-300">{{ film.genre }}</td>
+          <td class="px-6 py-3 text-center border-r border-gray-300">{{ film.produser or '-' }}</td>
+          <td class="px-6 py-3 text-center border-r border-gray-300">{{ film.tahun or '-' }}</td>
+          <td class="px-6 py-3">
+            <div class="flex justify-center gap-2">
+              <a href="{{ url_for('edit_film', film_id=film.id) }}"
+                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded shadow-sm transition">Edit</a>
+              <form action="{{ url_for('delete_film', film_id=film.id) }}" method="post" class="inline">
+                <button type="submit"
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm transition"
+                        onclick="return confirm('Yakin hapus film ini?')">Hapus</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-gray-400 py-8">Belum ada film di database.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

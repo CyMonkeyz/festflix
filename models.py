@@ -1,15 +1,18 @@
 import sqlite3
 import datetime
 import config
+from werkzeug.security import check_password_hash
 
 def get_db_connection():
     conn = sqlite3.connect(config.DATABASE_PATH)
-    conn.row_factory = sqlite3.Row  # biar hasil query bisa diakses dengan nama kolom
+    conn.row_factory = sqlite3.Row  # hasil query bisa diakses pakai nama kolom
     return conn
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    # Tabel users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,9 +22,51 @@ def init_db():
             subscription_expired TIMESTAMP
         );
     ''')
+
+    # Tabel films
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS films (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            path_poster TEXT,
+            path_video TEXT NOT NULL,
+            produser TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            rating_avg REAL DEFAULT 0,
+            jumlah_review INTEGER DEFAULT 0
+        );
+    ''')
+
+    # Tabel watch_history
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS watch_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            film_id INTEGER NOT NULL,
+            watched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(film_id) REFERENCES films(id)
+        );
+    ''')
+
+    # Tabel subscription_history
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS subscription_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            package TEXT NOT NULL,
+            start_date TIMESTAMP NOT NULL,
+            end_date TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+    ''')
+
     conn.commit()
     conn.close()
 
+# ===================== USER =========================
 def create_user(username, email, password_hash):
     try:
         conn = get_db_connection()
@@ -33,9 +78,9 @@ def create_user(username, email, password_hash):
         conn.commit()
         user_id = cursor.lastrowid
         conn.close()
-        return user_id  # sukses, return ID user
+        return user_id
     except sqlite3.IntegrityError:
-        return None  # email/username sudah terdaftar
+        return None
 
 def get_user_by_id(user_id):
     conn = get_db_connection()
@@ -53,13 +98,105 @@ def get_user_by_email(email):
     conn.close()
     return user
 
-from werkzeug.security import check_password_hash
-
 def verify_user(email, password):
     user = get_user_by_email(email)
     if user and check_password_hash(user['password_hash'], password):
         return user
     return None
 
-# Inisialisasi database saat pertama dijalankan
+# ===================== FILM =========================
+def create_film(title, genre, path_poster, path_video, produser=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO films (title, genre, path_poster, path_video, produser) VALUES (?, ?, ?, ?, ?)",
+        (title, genre, path_poster, path_video, produser)
+    )
+    conn.commit()
+    conn.close()
+
+def get_all_films():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM films")
+    films = cursor.fetchall()
+    conn.close()
+    return films
+
+def get_film_by_id(film_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM films WHERE id = ?", (film_id,))
+    film = cursor.fetchone()
+    conn.close()
+    return film
+
+# ===================== WATCH HISTORY =========================
+def add_watch_history(user_id, film_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO watch_history (user_id, film_id) VALUES (?, ?)", (user_id, film_id))
+    conn.commit()
+    conn.close()
+
+def count_watch_today(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM watch_history
+        WHERE user_id = ? AND DATE(watched_at) = DATE('now','localtime')
+    """, (user_id,))
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
+
+def get_watch_history(user_id, limit=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if limit:
+        cursor.execute("""
+            SELECT * FROM watch_history
+            WHERE user_id = ? ORDER BY watched_at DESC LIMIT ?
+        """, (user_id, limit))
+    else:
+        cursor.execute("""
+            SELECT * FROM watch_history
+            WHERE user_id = ? ORDER BY watched_at DESC
+        """, (user_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+# ===================== SUBSCRIPTION HISTORY =========================
+def create_subscription_history(user_id, package, start_date, end_date):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO subscription_history (user_id, package, start_date, end_date) VALUES (?, ?, ?, ?)",
+        (user_id, package, start_date, end_date)
+    )
+    conn.commit()
+    conn.close()
+
+def update_user_subscription(user_id, end_date):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET subscription_expired = ? WHERE id = ?",
+        (end_date, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+def get_subscription_info(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT subscription_expired FROM users WHERE id = ?", (user_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row['subscription_expired'] if row else None
+
+# ============= INIT DB SAAT DIJALANKAN LANGSUNG ================
 init_db()

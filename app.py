@@ -6,6 +6,7 @@ import config
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -21,10 +22,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-def dashboard():
-    user = models.get_user_by_id(session['user_id'])
-    return render_template('dashboard.html', user=user)
 
 # ===== ROUTE REGISTER =====
 @app.route('/register', methods=['GET', 'POST'])
@@ -72,15 +69,26 @@ def login():
             return redirect(url_for('dashboard'))
     return render_template('login.html')
 
-# ===== ROUTE DASHBOARD (protected) =====
+# ===== ROUTE DASHBOARD (protected & dinamis) =====
 @app.route('/')
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    user = None
-    if session.get('user_id'):
-        user = models.get_user_by_id(session['user_id'])
-    return render_template('dashboard.html', user=user)
+    user_id = session['user_id']
+    user = models.get_user_by_id(user_id)
+    films = models.get_all_films()
+    exp_date = models.get_subscription_info(user_id)
+    watch_today = models.count_watch_today(user_id)
+    now_datetime = datetime.utcnow()  # Bisa pakai now() kalau mau pakai waktu lokal
+
+    return render_template(
+        'dashboard.html',
+        user=user,
+        films=films,
+        subscription_expired=exp_date,
+        watch_count_today=watch_today,
+        now_datetime=now_datetime
+    )
 
 # ===== ROUTE LOGOUT =====
 @app.route('/logout')
@@ -88,6 +96,31 @@ def logout():
     session.clear()
     flash("Berhasil logout.", "info")
     return redirect(url_for('login'))
+
+# ===== ROUTE FILM DETAIL (stub, opsional bisa ditambah) =====
+@app.route('/film/<int:film_id>')
+@login_required
+def film_detail(film_id):
+    film = models.get_film_by_id(film_id)
+    if not film:
+        flash('Film tidak ditemukan', 'danger')
+        return redirect(url_for('dashboard'))
+    user_id = session['user_id']
+    exp_date = models.get_subscription_info(user_id)
+    now = datetime.utcnow()
+    watch_today = models.count_watch_today(user_id)
+    can_watch = False
+    if exp_date and exp_date > now:
+        can_watch = True
+    elif watch_today < 2:
+        can_watch = True
+    user = models.get_user_by_id(user_id)
+    return render_template(
+        'film_detail.html',
+        film=film,
+        can_watch=can_watch,
+        user=user
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

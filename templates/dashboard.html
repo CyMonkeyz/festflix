@@ -1,19 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
-  <!-- Navbar/Header -->
- <nav class="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
-  <span class="font-bold text-lg">Dashboard FestFlix</span>
-  <div class="flex items-center gap-2">
-    <span>Hai, {{ user['username'] }}</span>
-      <a href="{{ url_for('logout') }}" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600">Logout</a>
-  </div>
-</nav>
-
-  <!-- Banner Langganan -->
   <div class="container mx-auto mt-6">
+    <!-- Banner Langganan -->
     <div class="bg-yellow-200 text-yellow-800 rounded p-4 flex justify-between items-center mb-6">
-      <span>Status Langganan: <b>Belum Aktif</b></span>
-      <a href="#" class="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500">Langganan Sekarang</a>
+      {% if subscription_expired and subscription_expired > now_datetime %}
+        <span>Status Langganan: <b class="text-green-600">Aktif</b></span>
+        <span class="text-xs">Sampai: {{ subscription_expired }}</span>
+      {% else %}
+        <span>Status Langganan: <b class="text-red-600">Belum Aktif</b></span>
+        <a href="#" class="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500">Langganan Sekarang</a>
+      {% endif %}
     </div>
 
     <!-- Kategori Genre -->
@@ -28,22 +24,31 @@
       </div>
     </div>
 
-    <!-- Daftar Film Dummy -->
+    <!-- Daftar Film Dinamis -->
     <div>
       <h2 class="text-lg font-semibold mb-2">Daftar Film</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card Film Dummy -->
-        <div class="bg-white rounded shadow p-4">
-          <div class="h-40 bg-gray-300 rounded mb-2"></div>
-          <h3 class="font-bold text-xl mb-1">Judul Film 1</h3>
-          <button class="bg-blue-500 text-white px-4 py-1 rounded mt-2 w-full">Tonton</button>
-        </div>
-        <div class="bg-white rounded shadow p-4 opacity-60">
-          <div class="h-40 bg-gray-300 rounded mb-2"></div>
-          <h3 class="font-bold text-xl mb-1">Judul Film 2</h3>
-          <button class="bg-gray-400 text-white px-4 py-1 rounded mt-2 w-full" disabled>Locked</button>
-        </div>
-        <!-- Tambah lebih banyak card dummy sesuai selera -->
+        {% set now = now_datetime %}
+        {% for film in films %}
+          <div class="bg-white rounded shadow p-4">
+            {% if film.path_poster %}
+              <img src="{{ url_for('static', filename=film.path_poster) }}" alt="Poster {{ film.title }}" class="w-full h-48 object-cover">
+            {% endif %}
+            <h3 class="mt-2 font-semibold">{{ film.title }}</h3>
+            <p class="text-sm text-gray-600">{{ film.genre }}</p>
+            {% if subscription_expired and subscription_expired > now %}
+              <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 inline-block bg-blue-500 text-white px-3 py-1 rounded">Tonton</a>
+            {% else %}
+              {% if watch_count_today < 2 %}
+                <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 inline-block bg-blue-500 text-white px-3 py-1 rounded">Tonton Gratis</a>
+              {% else %}
+                <button class="mt-2 inline-block bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>Locked</button>
+              {% endif %}
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="col-span-3 text-center text-gray-400 py-8">Belum ada film di database.</div>
+        {% endfor %}
       </div>
     </div>
   </div>

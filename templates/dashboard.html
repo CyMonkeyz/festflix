@@ -46,6 +46,39 @@
 </script>
 {% endif %}
 
+<!-- Banner Histori Maks.5 -->
+<div class="bg-white rounded shadow p-4 mt-6 mb-8">
+  <h3 class="text-xl font-semibold mb-2">Histori Tontonan Hari Ini</h3>
+  {% if history %}
+    <ul class="list-disc list-inside">
+      {% for h in history %}
+        <li>
+          {{ films | selectattr('id', 'equalto', h.film_id) | map(attribute='title') | list | first or "Judul tidak ditemukan" }}
+          – {{ h.watched_at[:16]|replace('T', ' ') }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Belum ada histori tontonan hari ini.</p>
+  {% endif %}
+</div>
+
+<!-- Banner Kuota Gratis -->
+{% if not (subscription_expired and subscription_expired > now_datetime) %}
+  <div class="mb-6">
+    {% if watch_count_today < 2 %}
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded">
+        <b>Kuota Gratis:</b> Anda dapat menonton gratis <span class="font-bold">{{ 2 - watch_count_today }}</span> film lagi hari ini.<br>
+        Jika ingin lebih, silakan berlangganan.
+      </div>
+    {% else %}
+      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded">
+        <b>Kuota Gratis Habis:</b> Anda sudah mencapai batas 2 film gratis hari ini.<br>
+        Untuk menonton lebih banyak, silakan <a href="{{ url_for('subscribe') }}" class="underline text-blue-600">berlangganan</a>.
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
 
   <!-- Kategori Genre -->
   <div class="mb-4">
@@ -89,5 +122,6 @@
       {% endfor %}
     </div>
   </div>
+
 </div>
 {% endblock %}

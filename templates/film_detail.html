@@ -23,12 +23,13 @@
         </div>
         {% endif %}
         {% if can_watch %}
-          <form action="#" method="post">
-            <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded">Tonton Sekarang</button>
+          <form action="{{ url_for('play_film', film_id=film.id) }}" method="post">
+           <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded">Tonton Sekarang</button>
           </form>
         {% else %}
-          <button class="mt-4 bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Locked</button>
+            <button class="mt-4 bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Locked</button>
         {% endif %}
+
       </div>
     </div>
   </div>

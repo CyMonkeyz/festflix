@@ -237,6 +237,7 @@ def dashboard():
     exp_date = models.get_subscription_info(user_id)
     watch_today = models.count_watch_today(user_id)
     now_datetime = datetime.utcnow()
+    history = models.get_watch_history(user_id, limit=5)
     return render_template(
         'dashboard.html',
         user=user,
@@ -244,7 +245,8 @@ def dashboard():
         genre_list=GENRE_LIST,
         subscription_expired=exp_date,
         watch_count_today=watch_today,
-        now_datetime=now_datetime
+        now_datetime=now_datetime,
+        history=history
     )
 
 @app.route('/logout')
@@ -276,6 +278,27 @@ def film_detail(film_id):
         can_watch=can_watch,
         user=user
     )
+    
+@app.route('/play/<int:film_id>', methods=['POST'])
+@login_required
+def play_film(film_id):
+    user_id = session['user_id']
+    exp_date = models.get_subscription_info(user_id)
+    now = datetime.utcnow()
+    watch_today = models.count_watch_today(user_id)
+    # Cek akses (masih aktif, atau belum 2 kali nonton gratis hari ini)
+    allowed = False
+    if exp_date and exp_date > now:
+        allowed = True
+    elif watch_today < 2:
+        allowed = True
+    if not allowed:
+        flash('Batas nonton gratis hari ini sudah tercapai. Silakan berlangganan.', 'danger')
+        return redirect(url_for('dashboard'))
+    # Simpan histori nonton
+    models.add_watch_history(user_id, film_id)
+    film = models.get_film_by_id(film_id)
+    return render_template('player.html', film=film)
 
 # ====== ROUTE SUBSCRIBE ======
 @app.route('/subscribe', methods=['GET', 'POST'])

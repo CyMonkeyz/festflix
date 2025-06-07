@@ -105,7 +105,8 @@
                    class="w-full h-full object-cover" />
             </div>
           {% endif %}
-          <h3 class="mt-2 font-semibold text-base text-center truncate">{{ film.title }}</h3>
+          <h3 class="mt-2 font-semibold text-base text-center break-words whitespace-normal leading-tight min-h-[2.4em] mb-2">
+           {{ film.title }} </h3>
           <p class="text-xs text-gray-600 text-center">{{ film.genre }}</p>
           <p class="text-xs text-gray-500 text-center">{{ film.tahun }}</p>
           {% if subscription_expired and subscription_expired > now_datetime %}

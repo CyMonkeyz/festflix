@@ -1,13 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="container mx-auto p-4">
-    <h2 class="text-2xl font-bold mb-4">{{ film.title }}</h2>
-    <video width="800" controls>
+<div class="container mx-auto p-4 max-w-3xl">
+  <h2 class="text-2xl font-bold mb-4">{{ film.title }}</h2>
+  
+  <!-- Video Responsive 16:9 -->
+  <div class="relative w-full pb-[56.25%] bg-black rounded shadow mb-6 overflow-hidden">
+    <video 
+      class="absolute top-0 left-0 w-full h-full object-contain bg-black"
+      controls
+      preload="auto"
+    >
       <source src="{{ url_for('static', filename=film.path_video) }}" type="video/mp4">
       Browser Anda tidak mendukung tag video.
     </video>
-    <div class="mt-4">
-      <a href="{{ url_for('dashboard') }}" class="text-blue-500 hover:underline">Kembali ke Dashboard</a>
-    </div>
   </div>
+  
+  <!-- Form Rating & Review -->
+  <div class="mt-6">
+    <h3 class="text-xl font-semibold mb-2">Masukkan Rating & Komentar</h3>
+      <form action="{{ url_for('submit_review', film_id=film.id) }}" method="post" class="space-y-2">
+        <div>
+          <label for="rating" class="block text-sm">Rating (1–5):</label>
+          <select name="rating" id="rating" class="border rounded px-2 py-1">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div>
+          <label for="komentar" class="block text-sm">Komentar:</label>
+          <textarea name="komentar" id="komentar" rows="3" class="w-full border rounded px-2 py-1" placeholder="Berikan pendapat tentang film ini…"></textarea>
+        </div>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Kirim Review</button>
+      </form>
+   
+  </div>
+
+  <div class="mt-6">
+    <a href="{{ url_for('dashboard') }}" class="text-blue-500 hover:underline">Kembali ke Dashboard</a>
+  </div>
+</div>
 {% endblock %}

@@ -272,13 +272,32 @@ def film_detail(film_id):
         can_watch = True
     elif watch_today < 2:
         can_watch = True
+    reviews = models.get_reviews_by_film(film_id)
     user = models.get_user_by_id(user_id)
     return render_template(
         'film_detail.html',
         film=film,
         can_watch=can_watch,
-        user=user
+        user=user,
+        reviews=reviews
     )
+    
+@app.route('/film/<int:film_id>/review', methods=['POST'])
+@login_required
+def submit_review(film_id):
+    user_id = session['user_id']
+    try:
+        rating = int(request.form.get('rating', 0))
+    except ValueError:
+        rating = 0
+    komentar = request.form.get('komentar', '').strip()
+    if rating < 1 or rating > 5:
+        flash('Rating harus antara 1 sampai 5.', 'danger')
+        return redirect(url_for('film_detail', film_id=film_id))
+    models.add_review(user_id, film_id, rating, komentar)
+    models.update_film_rating(film_id)
+    flash('Terima kasih atas review Anda!', 'success')
+    return redirect(url_for('film_detail', film_id=film_id))
     
 @app.route('/play/<int:film_id>', methods=['POST'])
 @login_required

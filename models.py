@@ -65,6 +65,20 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         );
     ''')
+    
+    # Tabel Review
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        film_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL,
+        komentar TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(film_id) REFERENCES films(id)
+    );
+''')
 
     conn.commit()
     
@@ -224,6 +238,42 @@ def get_subscription_info(user_id):
         from datetime import datetime
         return datetime.fromisoformat(row['subscription_expired'])
     return None
+
+# ===================== REVIEW =========================
+def add_review(user_id, film_id, rating, komentar):
+    conn = get_db_connection()
+    conn.execute(
+        'INSERT INTO reviews (user_id, film_id, rating, komentar) VALUES (?, ?, ?, ?)',
+        (user_id, film_id, rating, komentar)
+    )
+    conn.commit()
+    conn.close()
+    
+def get_reviews_by_film(film_id):
+    conn = get_db_connection()
+    rows = conn.execute(
+        'SELECT r.rating, r.komentar, r.created_at, u.username '
+        'FROM reviews r JOIN users u ON r.user_id = u.id '
+        'WHERE r.film_id = ? '
+        'ORDER BY r.created_at DESC', (film_id,)
+    ).fetchall()
+    conn.close()
+    return rows
+
+def update_film_rating(film_id):
+    conn = get_db_connection()
+    stats = conn.execute(
+        'SELECT AVG(rating) as avg, COUNT(*) as cnt FROM reviews WHERE film_id = ?', (film_id,)
+    ).fetchone()
+    conn.execute(
+        'UPDATE films SET rating_avg = ?, jumlah_review = ? WHERE id = ?',
+        (stats['avg'] or 0, stats['cnt'], film_id)
+    )
+    conn.commit()
+    conn.close()
+    
+
+
 
 # ============= INIT DB SAAT DIJALANKAN LANGSUNG ================
 init_db()

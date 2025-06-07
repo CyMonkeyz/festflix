@@ -80,6 +80,15 @@
     </div>
   {% endif %}
 
+<!-- Pencarian/Search Bar Film -->
+<form method="get" class="flex flex-wrap gap-2 items-center mb-6">
+  <input type="text" name="q" placeholder="Cari judul / tahun / produser..."
+         value="{{ search_query or '' }}"
+         class="px-5 py-2 border rounded w-180 sm:w-72 md:w-96 lg:w-[32rem] max-w-full focus:outline-none focus:ring focus:border-blue-300" />
+  <button type="submit" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Cari</button>
+  <a href="{{ url_for('dashboard') }}" class="ml-2 text-gray-500 hover:text-gray-700 text-xs underline">Reset</a>
+</form>
+
   <!-- Kategori Genre -->
   <div class="mb-4">
     <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>

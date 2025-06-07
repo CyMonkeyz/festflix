@@ -81,23 +81,22 @@
   {% endif %}
 
   <!-- Kategori Genre -->
-<div class="mb-4">
-  <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>
-  <div class="flex gap-2 flex-wrap">
-    <a href="{{ url_for('dashboard') }}"
-       class="px-4 py-1 rounded {{ not genre_selected and 'bg-blue-600 text-white' or 'bg-gray-200 hover:bg-gray-300 text-gray-700' }}">
-      Semua
-    </a>
-    {% for g in genre_list %}
-      <a href="{{ url_for('dashboard', genre=g) }}"
-         class="px-4 py-1 rounded
-                {% if genre_selected == g %}bg-blue-600 text-white{% else %}bg-gray-200 hover:bg-gray-300 text-gray-700{% endif %}">
-        {{ g }}
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>
+    <div class="flex gap-2 flex-wrap">
+      <a href="{{ url_for('dashboard') }}"
+         class="px-4 py-1 rounded {{ not genre_selected and 'bg-blue-600 text-white' or 'bg-gray-200 hover:bg-gray-300 text-gray-700' }}">
+        Semua
       </a>
-    {% endfor %}
+      {% for g in genre_list %}
+        <a href="{{ url_for('dashboard', genre=g) }}"
+           class="px-4 py-1 rounded
+                  {% if genre_selected == g %}bg-blue-600 text-white{% else %}bg-gray-200 hover:bg-gray-300 text-gray-700{% endif %}">
+          {{ g }}
+        </a>
+      {% endfor %}
+    </div>
   </div>
-</div>
-
 
   <!-- Daftar Film Dinamis -->
   <div>
@@ -113,9 +112,10 @@
             </div>
           {% endif %}
           <h3 class="mt-2 font-semibold text-base text-center break-words whitespace-normal leading-tight min-h-[2.4em] mb-2">
-           {{ film.title }} </h3>
-          <p class="text-xs text-gray-600 text-center">{{ film.genre }}</p>
-          <p class="text-xs text-gray-500 text-center">{{ film.tahun }}</p>
+            {{ film.title }}
+          </h3>
+          <p class="text-xs text-gray-600 text-center mb-1">{{ film.genre }}</p>
+          <p class="text-xs text-gray-500 text-center mb-1">{{ film.tahun }}</p>
           {% if subscription_expired and subscription_expired > now_datetime %}
             <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 block bg-blue-500 text-white px-3 py-1 rounded text-center">Tonton</a>
           {% else %}
@@ -134,15 +134,18 @@
 
   <!-- Floating Chat Festy AI -->
   <button id="chat-toggle" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-3 rounded-full shadow-lg z-50">Chat FestyAI</button>
-  <div id="chat-window" class="fixed bottom-20 right-6 w-80 h-96 bg-white border rounded shadow-lg hidden flex flex-col z-50">
+  <div id="chat-window" class="fixed bottom-24 right-8 w-96 h-[32rem] bg-white border rounded shadow-lg hidden flex flex-col z-50">
     <div class="bg-indigo-600 p-2 text-white flex justify-between items-center rounded-t">
       <span>Festy AI</span>
-      <button id="chat-close" class="text-lg font-bold">&times;</button>
+      <div>
+        <button id="chat-clear" class="text-xs bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded mr-2">Clear</button>
+        <button id="chat-close" class="text-lg font-bold">&times;</button>
+      </div>
     </div>
     <div id="chat-messages" class="flex-1 p-2 overflow-y-auto text-sm"></div>
-    <form id="chat-form" class="p-2 border-t flex">
-      <input type="text" id="chat-input" class="flex-1 border rounded px-2 py-1" placeholder="Tanyakan sesuatu..." autocomplete="off" />
-      <button type="submit" class="ml-2 bg-indigo-600 text-white px-3 py-1 rounded">Kirim</button>
+    <form id="chat-form" class="p-2 border-t flex gap-2">
+      <textarea id="chat-input" class="flex-1 border rounded px-2 py-1 resize-none" placeholder="Tanyakan sesuatu..." rows="2" autocomplete="off"></textarea>
+      <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded">Kirim</button>
     </form>
   </div>
 
@@ -150,20 +153,87 @@
     const chatToggle = document.getElementById('chat-toggle');
     const chatWindow = document.getElementById('chat-window');
     const chatClose = document.getElementById('chat-close');
-    chatToggle.addEventListener('click', () => chatWindow.classList.remove('hidden'));
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatClear = document.getElementById('chat-clear');
+
+    // Load history saat popup dibuka
+    function loadChatHistory() {
+      chatMessages.innerHTML = "";
+      let history = localStorage.getItem('festy_ai_history');
+      if (history) {
+        try {
+          const data = JSON.parse(history);
+          data.forEach(msg => {
+            const msgElem = document.createElement('div');
+            msgElem.className = msg.className;
+            msgElem.innerHTML = msg.text; // Use innerHTML for multi-line
+            chatMessages.appendChild(msgElem);
+          });
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (e) {
+          localStorage.removeItem('festy_ai_history');
+        }
+      }
+    }
+
+    // Simpan ke localStorage setiap ada pesan
+    function saveChatHistory() {
+      const items = [];
+      chatMessages.querySelectorAll('div').forEach(div => {
+        items.push({
+          className: div.className,
+          text: div.innerHTML
+        });
+      });
+      localStorage.setItem('festy_ai_history', JSON.stringify(items));
+    }
+
+    // Event show/hide chat
+    chatToggle.addEventListener('click', () => {
+      chatWindow.classList.remove('hidden');
+      loadChatHistory();
+    });
     chatClose.addEventListener('click', () => chatWindow.classList.add('hidden'));
 
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
+    // Tombol CLEAR: hapus history dari localStorage & tampilan
+    chatClear.addEventListener('click', function() {
+      if (confirm("Hapus semua riwayat chat Festy AI?")) {
+        localStorage.removeItem('festy_ai_history');
+        chatMessages.innerHTML = '';
+      }
+    });
+
+    // Deteksi CTRL+Enter untuk submit (multi-line textarea)
+    chatInput.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));
+      }
+    });
+
+    // Form submit: tambahkan + simpan history
+    chatForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      const msg = document.getElementById('chat-input').value;
-      if (!msg.trim()) return;
-      const chatMessages = document.getElementById('chat-messages');
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+
       // User message
       const userMsgElem = document.createElement('div');
       userMsgElem.classList.add('text-right', 'text-blue-600', 'mb-1');
-      userMsgElem.textContent = 'Anda: ' + msg;
+      userMsgElem.innerHTML = 'Anda: ' + msg.replace(/\n/g, '<br>');
       chatMessages.appendChild(userMsgElem);
-      // Kirim ke server via fetch
+      saveChatHistory();
+
+      // Loading animation
+      const loadingElem = document.createElement('div');
+      loadingElem.classList.add('text-left', 'text-gray-400', 'mb-1', 'ai-loading');
+      loadingElem.innerHTML = '<span class="animate-pulse">Festy AI sedang mengetik...</span>';
+      chatMessages.appendChild(loadingElem);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // AJAX ke server
       fetch('{{ url_for("chat") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -171,18 +241,24 @@
       })
       .then(res => res.json())
       .then(data => {
+        loadingElem.remove();
         const botMsgElem = document.createElement('div');
         botMsgElem.classList.add('text-left', 'text-gray-800', 'mb-1');
-        botMsgElem.textContent = 'Festy AI: ' + data.reply;
+        // Render balasan: support multi-line dari Deepseek dengan <br>
+        botMsgElem.innerHTML = 'Festy AI: ' + data.reply.replace(/\n/g, '<br>');
         chatMessages.appendChild(botMsgElem);
+        saveChatHistory();
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }).catch(() => {
+        loadingElem.remove();
         const errorMsgElem = document.createElement('div');
         errorMsgElem.classList.add('text-left', 'text-red-600', 'mb-1');
         errorMsgElem.textContent = 'Festy AI: Maaf, terjadi error.';
         chatMessages.appendChild(errorMsgElem);
+        saveChatHistory();
       });
-      document.getElementById('chat-input').value = '';
+
+      chatInput.value = '';
     });
   </script>
 

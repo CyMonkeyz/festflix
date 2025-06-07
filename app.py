@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime, timedelta
+from deepseek import query_deepseek, rule_based_reply
 import random
 
 app = Flask(__name__)
@@ -387,31 +388,15 @@ import random
 @login_required
 def chat():
     data = request.get_json()
-    msg = data.get('message', '').lower()
-    # Rule-based logic
-    reply = ''
-    if 'rekomendasi' in msg:
-        films = models.get_all_films()
-        if films:
-            rekom = random.sample(films, min(3, len(films)))
-            titles = [f['title'] for f in rekom]
-            reply = 'Coba nonton: ' + ', '.join(titles)
-        else:
-            reply = 'Maaf, belum ada data film.'
-    elif 'genre' in msg:
-        parts = msg.split()
-        if len(parts) >= 2:
-            gen = parts[-1].capitalize()
-            matched = [f['title'] for f in models.get_all_films() if f['genre'] == gen]
-            if matched:
-                reply = f'Film genre {gen}: ' + ', '.join(matched)
-            else:
-                reply = f'Tidak ada film dengan genre {gen}.'
-        else:
-            reply = 'Ketik “genre (nama genre)” untuk mencari film sesuai genre.'
-    else:
-        reply = 'Maaf, saya belum mengerti. Coba ketik “rekomendasi” atau “genre (nama genre)”.'
+    msg = data.get('message', '').strip()
+    if not msg:
+        return jsonify({'reply': 'Tuliskan sesuatu terlebih dahulu.'})
+    reply = query_deepseek(msg)
+    # Fallback rule-based kalau AI error (opsional)
+    if reply.startswith("Maaf, AI error:"):
+        reply = rule_based_reply(msg)  
     return jsonify({'reply': reply})
+
 
 
 if __name__ == '__main__':

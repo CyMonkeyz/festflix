@@ -326,27 +326,54 @@ def play_film(film_id):
 def subscribe():
     user_id = session['user_id']
     if request.method == 'POST':
-        paket = request.form.get('package')  # '30_detik', '5_menit', '1_hari'
+        paket = request.form.get('package')
         now = datetime.utcnow()
         if not paket:
             flash('Pilih paket terlebih dahulu.', 'danger')
             return redirect(url_for('subscribe'))
         if paket == '30_detik':
             end = now + timedelta(seconds=30)
-        elif paket == '5_menit':
+            models.create_subscription_history(user_id, paket, now, end)
+            models.update_user_subscription(user_id, end)
+            flash('Berhasil berlangganan demo.', 'success')
+            return redirect(url_for('dashboard'))
+        elif paket in ('5_menit', '1_hari'):
+            # Redirect ke halaman pembayaran
+            return redirect(url_for('payment', paket=paket))
+        else:
+            flash('Pilihan paket tidak valid.', 'danger')
+            return redirect(url_for('subscribe'))
+    return render_template('subscribe.html')
+
+
+# ====== ROUTE PAYMENT ======
+@app.route('/payment', methods=['GET', 'POST'])
+@login_required
+def payment():
+    paket = request.args.get('paket')
+    nominal = None
+    if paket == '5_menit':
+        nominal = 1000
+    elif paket == '1_hari':
+        nominal = 5000
+    else:
+        flash('Paket tidak valid untuk pembayaran!', 'danger')
+        return redirect(url_for('subscribe'))
+    if request.method == 'POST':
+        # Proses pembayaran selesai
+        now = datetime.utcnow()
+        if paket == '5_menit':
             end = now + timedelta(minutes=5)
         elif paket == '1_hari':
             end = now + timedelta(days=1)
         else:
-            flash('Pilihan paket tidak valid.', 'danger')
-            return redirect(url_for('subscribe'))
-        # Simpan ke subscription_history
+            return redirect(url_for('dashboard'))
+        user_id = session['user_id']
         models.create_subscription_history(user_id, paket, now, end)
-        # Update expired di users
         models.update_user_subscription(user_id, end)
-        flash(f'Berhasil berlangganan sampai {end.strftime("%Y-%m-%d %H:%M")}', 'success')
+        flash('Pembayaran berhasil, langganan aktif!', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('subscribe.html')
+    return render_template('payment.html', paket=paket, nominal=nominal)
 
 # ====== ROUTE CHAT ======
 from flask import jsonify

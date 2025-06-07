@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mx-auto mt-6">
+
   <!-- Banner Langganan -->
   <div class="bg-white rounded shadow p-4 mb-6">
     {% if subscription_expired and subscription_expired > now_datetime %}
       <p class="text-green-600">
-        Status Langganan: Aktif
-        <br>
+        Status Langganan: Aktif<br>
         Sisa waktu: <span id="countdown"></span>
       </p>
     {% else %}
@@ -16,34 +16,34 @@
   </div>
 
   {% if subscription_expired and subscription_expired > now_datetime %}
-  <script>
-    // Server-side expired time (UTC)
-    const expiredStr = "{{ subscription_expired.isoformat() }}";
-    const expiredTime = new Date(expiredStr + "Z").getTime();
+    <script>
+      // Server-side expired time (UTC)
+      const expiredStr = "{{ subscription_expired.isoformat() }}";
+      const expiredTime = new Date(expiredStr + "Z").getTime();
 
-    function pad(x) { return String(x).padStart(2, "0"); }
+      function pad(x) { return String(x).padStart(2, "0"); }
 
-    function updateCountdown() {
-      const now = new Date().getTime();
-      let distance = expiredTime - now;
+      function updateCountdown() {
+        const now = new Date().getTime();
+        let distance = expiredTime - now;
 
-      if (distance <= 0) {
-        document.getElementById("countdown").innerText = "00:00:00 WIB (expired)";
-        setTimeout(() => window.location.reload(), 1000);
-        return;
+        if (distance <= 0) {
+          document.getElementById("countdown").innerText = "00:00:00 WIB (expired)";
+          setTimeout(() => window.location.reload(), 1000);
+          return;
+        }
+
+        let hours = Math.floor(distance / (1000 * 60 * 60));
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerText =
+          `${pad(hours)}:${pad(minutes)}:${pad(seconds)} WIB`;
+
+        setTimeout(updateCountdown, 1000);
       }
-
-      let hours = Math.floor(distance / (1000 * 60 * 60));
-      let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      document.getElementById("countdown").innerText =
-        `${pad(hours)}:${pad(minutes)}:${pad(seconds)} WIB`;
-
-      setTimeout(updateCountdown, 1000);
-    }
-    updateCountdown();
-  </script>
+      updateCountdown();
+    </script>
   {% endif %}
 
   <!-- Banner Histori Maks.5 -->
@@ -95,30 +95,31 @@
   <!-- Daftar Film Dinamis -->
   <div>
     <h2 class="text-lg font-semibold mb-2">Daftar Film</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {% set now = now_datetime %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
       {% for film in films %}
-        <div class="bg-white rounded shadow p-4">
+        <div class="bg-white rounded shadow p-4 flex flex-col items-center">
           {% if film.path_poster %}
-            <img src="{{ url_for('static', filename=film.path_poster) }}" alt="Poster {{ film.title }}" class="w-full h-48 object-cover">
+            <div class="w-[120px] h-[180px] md:w-[148px] md:h-[220px] lg:w-[148px] lg:h-[220px] mb-2 rounded overflow-hidden bg-gray-200 flex items-center justify-center">
+              <img src="{{ url_for('static', filename=film.path_poster) }}"
+                   alt="Poster {{ film.title }}"
+                   class="w-full h-full object-cover" />
+            </div>
           {% endif %}
-          <h3 class="mt-2 font-semibold">{{ film.title }}</h3>
-          <p class="text-sm text-gray-600">{{ film.genre }}</p>
-          <p>Produser: {{ film.produser }}</p>
-          <p>Tahun: {{ film.tahun }}</p>
-
-          {% if subscription_expired and subscription_expired > now %}
-            <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 inline-block bg-blue-500 text-white px-3 py-1 rounded">Tonton</a>
+          <h3 class="mt-2 font-semibold text-base text-center truncate">{{ film.title }}</h3>
+          <p class="text-xs text-gray-600 text-center">{{ film.genre }}</p>
+          <p class="text-xs text-gray-500 text-center">{{ film.tahun }}</p>
+          {% if subscription_expired and subscription_expired > now_datetime %}
+            <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 block bg-blue-500 text-white px-3 py-1 rounded text-center">Tonton</a>
           {% else %}
             {% if watch_count_today < 2 %}
-              <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 inline-block bg-blue-500 text-white px-3 py-1 rounded">Tonton Gratis</a>
+              <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mt-2 block bg-blue-500 text-white px-3 py-1 rounded text-center">Tonton Gratis</a>
             {% else %}
-              <button class="mt-2 inline-block bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>Locked</button>
+              <button class="mt-2 block bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed w-full" disabled>Locked</button>
             {% endif %}
           {% endif %}
         </div>
       {% else %}
-        <div class="col-span-3 text-center text-gray-400 py-8">Belum ada film di database.</div>
+        <div class="col-span-5 text-center text-gray-400 py-8">Belum ada film di database.</div>
       {% endfor %}
     </div>
   </div>
@@ -176,4 +177,6 @@
       document.getElementById('chat-input').value = '';
     });
   </script>
+
+</div>
 {% endblock %}

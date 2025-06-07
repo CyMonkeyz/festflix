@@ -3,7 +3,6 @@
   <div class="flex items-center justify-center min-h-screen">
     <div class="bg-white shadow rounded p-8 w-full max-w-md">
       <h2 class="text-2xl font-bold mb-6 text-center">Register FestFlix</h2>
-      <!-- Tambahkan block untuk flash message (optional, biar rapi) -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}

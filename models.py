@@ -130,11 +130,14 @@ def create_film(title, genre, sinopsis, tahun, path_poster, path_video, produser
 def update_film(film_id, title, genre, sinopsis, tahun, path_poster, path_video, produser):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute(
+        """
         UPDATE films
         SET title=?, genre=?, sinopsis=?, tahun=?, path_poster=?, path_video=?, produser=?
         WHERE id=?
-    ''', (title, genre, sinopsis, tahun, path_poster, path_video, produser, film_id))
+        """,
+        (title, genre, sinopsis, tahun, path_poster, path_video, produser, film_id),
+    )
     conn.commit()
     conn.close()
 

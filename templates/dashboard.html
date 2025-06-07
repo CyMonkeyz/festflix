@@ -16,69 +16,69 @@
   </div>
 
   {% if subscription_expired and subscription_expired > now_datetime %}
-<script>
-  // Server-side expired time (UTC)
-  const expiredStr = "{{ subscription_expired.isoformat() }}";
-  const expiredTime = new Date(expiredStr + "Z").getTime();
+  <script>
+    // Server-side expired time (UTC)
+    const expiredStr = "{{ subscription_expired.isoformat() }}";
+    const expiredTime = new Date(expiredStr + "Z").getTime();
 
-  function pad(x) { return String(x).padStart(2, "0"); }
+    function pad(x) { return String(x).padStart(2, "0"); }
 
-  function updateCountdown() {
-    const now = new Date().getTime();
-    let distance = expiredTime - now;
+    function updateCountdown() {
+      const now = new Date().getTime();
+      let distance = expiredTime - now;
 
-    if (distance <= 0) {
-      document.getElementById("countdown").innerText = "00:00:00 (expired)";
-      setTimeout(() => window.location.reload(), 1000);
-      return;
+      if (distance <= 0) {
+        document.getElementById("countdown").innerText = "00:00:00 WIB (expired)";
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      }
+
+      let hours = Math.floor(distance / (1000 * 60 * 60));
+      let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown").innerText =
+        `${pad(hours)}:${pad(minutes)}:${pad(seconds)} WIB`;
+
+      setTimeout(updateCountdown, 1000);
     }
-
-    let hours = Math.floor(distance / (1000 * 60 * 60));
-    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    document.getElementById("countdown").innerText =
-      `${pad(hours)}:${pad(minutes)}:${pad(seconds)} WIB`;
-
-    setTimeout(updateCountdown, 1000);
-  }
-  updateCountdown();
-</script>
-{% endif %}
-
-<!-- Banner Histori Maks.5 -->
-<div class="bg-white rounded shadow p-4 mt-6 mb-8">
-  <h3 class="text-xl font-semibold mb-2">Histori Tontonan Hari Ini</h3>
-  {% if history %}
-    <ul class="list-disc list-inside">
-      {% for h in history %}
-        <li>
-          {{ films | selectattr('id', 'equalto', h.film_id) | map(attribute='title') | list | first or "Judul tidak ditemukan" }}
-          – {{ h.watched_at[:16]|replace('T', ' ') }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Belum ada histori tontonan hari ini.</p>
+    updateCountdown();
+  </script>
   {% endif %}
-</div>
 
-<!-- Banner Kuota Gratis -->
-{% if not (subscription_expired and subscription_expired > now_datetime) %}
-  <div class="mb-6">
-    {% if watch_count_today < 2 %}
-      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded">
-        <b>Kuota Gratis:</b> Anda dapat menonton gratis <span class="font-bold">{{ 2 - watch_count_today }}</span> film lagi hari ini.<br>
-        Jika ingin lebih, silakan berlangganan.
-      </div>
+  <!-- Banner Histori Maks.5 -->
+  <div class="bg-white rounded shadow p-4 mt-6 mb-8">
+    <h3 class="text-xl font-semibold mb-2">Histori Tontonan Hari Ini</h3>
+    {% if history %}
+      <ul class="list-disc list-inside">
+        {% for h in history %}
+          <li>
+            {{ films | selectattr('id', 'equalto', h.film_id) | map(attribute='title') | list | first or "Judul tidak ditemukan" }}
+            – {{ h.watched_at[:16]|replace('T', ' ') }}
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded">
-        <b>Kuota Gratis Habis:</b> Anda sudah mencapai batas 2 film gratis hari ini.<br>
-        Untuk menonton lebih banyak, silakan <a href="{{ url_for('subscribe') }}" class="underline text-blue-600">berlangganan</a>.
-      </div>
+      <p>Belum ada histori tontonan hari ini.</p>
     {% endif %}
   </div>
-{% endif %}
+
+  <!-- Banner Kuota Gratis -->
+  {% if not (subscription_expired and subscription_expired > now_datetime) %}
+    <div class="mb-6">
+      {% if watch_count_today < 2 %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded">
+          <b>Kuota Gratis:</b> Anda dapat menonton gratis <span class="font-bold">{{ 2 - watch_count_today }}</span> film lagi hari ini.<br>
+          Jika ingin lebih, silakan berlangganan.
+        </div>
+      {% else %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded">
+          <b>Kuota Gratis Habis:</b> Anda sudah mencapai batas 2 film gratis hari ini.<br>
+          Untuk menonton lebih banyak, silakan <a href="{{ url_for('subscribe') }}" class="underline text-blue-600">berlangganan</a>.
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
 
   <!-- Kategori Genre -->
   <div class="mb-4">
@@ -123,5 +123,57 @@
     </div>
   </div>
 
-</div>
+  <!-- Floating Chat Festy AI -->
+  <button id="chat-toggle" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-3 rounded-full shadow-lg z-50">Chat FestyAI</button>
+  <div id="chat-window" class="fixed bottom-20 right-6 w-80 h-96 bg-white border rounded shadow-lg hidden flex flex-col z-50">
+    <div class="bg-indigo-600 p-2 text-white flex justify-between items-center rounded-t">
+      <span>Festy AI</span>
+      <button id="chat-close" class="text-lg font-bold">&times;</button>
+    </div>
+    <div id="chat-messages" class="flex-1 p-2 overflow-y-auto text-sm"></div>
+    <form id="chat-form" class="p-2 border-t flex">
+      <input type="text" id="chat-input" class="flex-1 border rounded px-2 py-1" placeholder="Tanyakan sesuatu..." autocomplete="off" />
+      <button type="submit" class="ml-2 bg-indigo-600 text-white px-3 py-1 rounded">Kirim</button>
+    </form>
+  </div>
+
+  <script>
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatWindow = document.getElementById('chat-window');
+    const chatClose = document.getElementById('chat-close');
+    chatToggle.addEventListener('click', () => chatWindow.classList.remove('hidden'));
+    chatClose.addEventListener('click', () => chatWindow.classList.add('hidden'));
+
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('chat-input').value;
+      if (!msg.trim()) return;
+      const chatMessages = document.getElementById('chat-messages');
+      // User message
+      const userMsgElem = document.createElement('div');
+      userMsgElem.classList.add('text-right', 'text-blue-600', 'mb-1');
+      userMsgElem.textContent = 'Anda: ' + msg;
+      chatMessages.appendChild(userMsgElem);
+      // Kirim ke server via fetch
+      fetch('{{ url_for("chat") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const botMsgElem = document.createElement('div');
+        botMsgElem.classList.add('text-left', 'text-gray-800', 'mb-1');
+        botMsgElem.textContent = 'Festy AI: ' + data.reply;
+        chatMessages.appendChild(botMsgElem);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }).catch(() => {
+        const errorMsgElem = document.createElement('div');
+        errorMsgElem.classList.add('text-left', 'text-red-600', 'mb-1');
+        errorMsgElem.textContent = 'Festy AI: Maaf, terjadi error.';
+        chatMessages.appendChild(errorMsgElem);
+      });
+      document.getElementById('chat-input').value = '';
+    });
+  </script>
 {% endblock %}

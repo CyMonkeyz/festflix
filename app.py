@@ -1,10 +1,11 @@
 import models
 import config
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime, timedelta
+import random
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -327,6 +328,40 @@ def subscribe():
         flash(f'Berhasil berlangganan sampai {end.strftime("%Y-%m-%d %H:%M")}', 'success')
         return redirect(url_for('dashboard'))
     return render_template('subscribe.html')
+
+# ====== ROUTE CHAT ======
+from flask import jsonify
+import random
+
+@app.route('/chat', methods=['POST'])
+@login_required
+def chat():
+    data = request.get_json()
+    msg = data.get('message', '').lower()
+    # Rule-based logic
+    reply = ''
+    if 'rekomendasi' in msg:
+        films = models.get_all_films()
+        if films:
+            rekom = random.sample(films, min(3, len(films)))
+            titles = [f['title'] for f in rekom]
+            reply = 'Coba nonton: ' + ', '.join(titles)
+        else:
+            reply = 'Maaf, belum ada data film.'
+    elif 'genre' in msg:
+        parts = msg.split()
+        if len(parts) >= 2:
+            gen = parts[-1].capitalize()
+            matched = [f['title'] for f in models.get_all_films() if f['genre'] == gen]
+            if matched:
+                reply = f'Film genre {gen}: ' + ', '.join(matched)
+            else:
+                reply = f'Tidak ada film dengan genre {gen}.'
+        else:
+            reply = 'Ketik “genre (nama genre)” untuk mencari film sesuai genre.'
+    else:
+        reply = 'Maaf, saya belum mengerti. Coba ketik “rekomendasi” atau “genre (nama genre)”.'
+    return jsonify({'reply': reply})
 
 
 if __name__ == '__main__':

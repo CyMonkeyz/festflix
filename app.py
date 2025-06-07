@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -276,6 +276,35 @@ def film_detail(film_id):
         can_watch=can_watch,
         user=user
     )
+
+# ====== ROUTE SUBSCRIBE ======
+@app.route('/subscribe', methods=['GET', 'POST'])
+@login_required
+def subscribe():
+    user_id = session['user_id']
+    if request.method == 'POST':
+        paket = request.form.get('package')  # '30_detik', '5_menit', '1_hari'
+        now = datetime.utcnow()
+        if not paket:
+            flash('Pilih paket terlebih dahulu.', 'danger')
+            return redirect(url_for('subscribe'))
+        if paket == '30_detik':
+            end = now + timedelta(seconds=30)
+        elif paket == '5_menit':
+            end = now + timedelta(minutes=5)
+        elif paket == '1_hari':
+            end = now + timedelta(days=1)
+        else:
+            flash('Pilihan paket tidak valid.', 'danger')
+            return redirect(url_for('subscribe'))
+        # Simpan ke subscription_history
+        models.create_subscription_history(user_id, paket, now, end)
+        # Update expired di users
+        models.update_user_subscription(user_id, end)
+        flash(f'Berhasil berlangganan sampai {end.strftime("%Y-%m-%d %H:%M")}', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('subscribe.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

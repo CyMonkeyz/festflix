@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container mx-auto max-w-md p-6">
+    <h2 class="text-2xl font-bold mb-4">Pilih Paket Langganan</h2>
+    <form action="{{ url_for('subscribe') }}" method="post" class="space-y-4">
+      <div>
+        <input type="radio" name="package" id="30s" value="30_detik" class="mr-2" required>
+        <label for="30s">30 Detik – GRATIS (Demo)</label>
+      </div>
+      <div>
+        <input type="radio" name="package" id="5m" value="5_menit" class="mr-2">
+        <label for="5m">5 Menit – Rp1.000</label>
+      </div>
+      <div>
+        <input type="radio" name="package" id="1h" value="1_hari" class="mr-2">
+        <label for="1h">1 Hari – Rp5.000</label>
+      </div>
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Berlangganan</button>
+      <a href="{{ url_for('dashboard') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition">Kembali</a>
+    </form>
+  </div>
+{% endblock %}

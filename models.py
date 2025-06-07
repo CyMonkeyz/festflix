@@ -206,7 +206,7 @@ def update_user_subscription(user_id, end_date):
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE users SET subscription_expired = ? WHERE id = ?",
-        (end_date, user_id)
+        (end_date.isoformat(), user_id)
     )
     conn.commit()
     conn.close()
@@ -219,7 +219,11 @@ def get_subscription_info(user_id):
     )
     row = cursor.fetchone()
     conn.close()
-    return row['subscription_expired'] if row else None
+    # Konversi ke datetime jika ada
+    if row and row['subscription_expired']:
+        from datetime import datetime
+        return datetime.fromisoformat(row['subscription_expired'])
+    return None
 
 # ============= INIT DB SAAT DIJALANKAN LANGSUNG ================
 init_db()

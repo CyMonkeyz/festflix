@@ -234,20 +234,24 @@ def delete_film(film_id):
 def dashboard():
     user_id = session['user_id']
     user = models.get_user_by_id(user_id)
+    # Ambil filter genre dari parameter URL
+    genre_selected = request.args.get('genre')
     films = models.get_all_films()
+    if genre_selected:
+        films = [f for f in films if f['genre'].lower() == genre_selected.lower()]
     exp_date = models.get_subscription_info(user_id)
     watch_today = models.count_watch_today(user_id)
     now_datetime = datetime.utcnow()
-    history = models.get_watch_history(user_id, limit=5)
+    # Kirim genre terpilih ke template
     return render_template(
         'dashboard.html',
         user=user,
         films=films,
-        genre_list=GENRE_LIST,
+        genre_selected=genre_selected,
+        genre_list=["Action", "Drama", "Komedi", "Horror", "Sci-Fi"],
         subscription_expired=exp_date,
         watch_count_today=watch_today,
-        now_datetime=now_datetime,
-        history=history
+        now_datetime=now_datetime
     )
 
 @app.route('/logout')

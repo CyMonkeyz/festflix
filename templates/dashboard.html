@@ -81,16 +81,23 @@
   {% endif %}
 
   <!-- Kategori Genre -->
-  <div class="mb-4">
-    <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>
-    <div class="flex gap-2 flex-wrap">
-      <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Action</button>
-      <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Drama</button>
-      <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Komedi</button>
-      <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Horror</button>
-      <button class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Sci-Fi</button>
-    </div>
+<div class="mb-4">
+  <h2 class="text-lg font-semibold mb-2">Kategori Genre</h2>
+  <div class="flex gap-2 flex-wrap">
+    <a href="{{ url_for('dashboard') }}"
+       class="px-4 py-1 rounded {{ not genre_selected and 'bg-blue-600 text-white' or 'bg-gray-200 hover:bg-gray-300 text-gray-700' }}">
+      Semua
+    </a>
+    {% for g in genre_list %}
+      <a href="{{ url_for('dashboard', genre=g) }}"
+         class="px-4 py-1 rounded
+                {% if genre_selected == g %}bg-blue-600 text-white{% else %}bg-gray-200 hover:bg-gray-300 text-gray-700{% endif %}">
+        {{ g }}
+      </a>
+    {% endfor %}
   </div>
+</div>
+
 
   <!-- Daftar Film Dinamis -->
   <div>

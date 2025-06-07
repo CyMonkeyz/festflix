@@ -10,4 +10,5 @@ load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1"
 
-print(secrets.token_hex(16)) #cuman buat generate code key
+# Uncomment the line below to generate a new random secret key
+# print(secrets.token_hex(16))  # cuman buat generate code key

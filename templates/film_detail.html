@@ -32,6 +32,7 @@
           </form>
         {% else %}
             <button class="mt-4 bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Locked</button>
+            <a href="{{ url_for('dashboard') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition">Kembali</a>
         {% endif %}
 
         <!-- Review Pengguna Lain -->

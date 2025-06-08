@@ -50,17 +50,18 @@
   <div class="bg-white rounded shadow p-4 mt-6 mb-8">
     <h3 class="text-xl font-semibold mb-2">Histori Tontonan Hari Ini</h3>
     {% if history %}
-      <ul class="list-disc list-inside">
-        {% for h in history %}
-          <li>
-            {{ films | selectattr('id', 'equalto', h.film_id) | map(attribute='title') | list | first or "Judul tidak ditemukan" }}
-            – {{ h.watched_at[:16]|replace('T', ' ') }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>Belum ada histori tontonan hari ini.</p>
-    {% endif %}
+  <ul class="list-disc list-inside">
+    {% for h in history %}
+      <li>
+        {{ films | selectattr('id', 'equalto', h.film_id) | map(attribute='title') | list | first or "Judul tidak ditemukan" }}
+        – {{ h.watched_at[:16]|replace('T', ' ') }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Belum ada histori tontonan hari ini.</p>
+{% endif %}
+
   </div>
 
   <!-- Banner Kuota Gratis -->

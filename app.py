@@ -239,6 +239,7 @@ def dashboard():
     exp_date = models.get_subscription_info(user_id)
     watch_today = models.count_watch_today(user_id)
     now_datetime = datetime.utcnow()
+    history = models.get_watch_history(user_id, limit=5)
 
     # --------- Tambahan Search ----------
     search_query = request.args.get('q', '').strip()
@@ -260,6 +261,7 @@ def dashboard():
         subscription_expired=exp_date,
         watch_count_today=watch_today,
         now_datetime=now_datetime,
+        history=history, 
         genre_selected=request.args.get('genre', ''),   # jika kamu pakai filter genre
         search_query=search_query
     )

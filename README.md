@@ -40,9 +40,6 @@ Riwayat film yang sudah pernah ditonton user.
 ⭐ Review & Rating : 
 User bisa memberi rating (bintang) & komentar pada film yang sudah ditonton.
 
-🌗 Dark Mode / Light Mode : 
-Switch/toggle untuk mengubah tema tampilan aplikasi.
-
 🚪 Logout : 
 Tombol logout agar user bisa keluar dari aplikasi dengan aman.
 

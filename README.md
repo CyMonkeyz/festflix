@@ -24,7 +24,7 @@ Filter genre dengan tombol/dropdown.
 Search bar untuk mencari judul/genre (opsional).
 
 ⏳ Subscription (Langganan) : 
-Pilihan paket (1 hari/3 hari/1 minggu dummy).
+Pilihan paket (30 detik/1 menit/1 hari dummy).
 Setelah pilih paket, langganan langsung aktif (payment gateway simulasi/dummy).
 Banner countdown sisa waktu langganan.
 User non-subscriber hanya bisa menonton 2 film per hari.
